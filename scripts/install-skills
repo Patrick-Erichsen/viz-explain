@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source_dir="$repo_dir/skill"
+target_dir="$HOME/.agents/skills/viz-explain"
+force=0
+
+while (( $# > 0 )); do
+  case "$1" in
+    --mode)
+      [[ "${2:-}" == "symlink" ]] || { echo "viz-explain only supports --mode symlink" >&2; exit 2; }
+      shift 2
+      ;;
+    --force)
+      force=1
+      shift
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      exit 2
+      ;;
+  esac
+done
+
+mkdir -p "$(dirname "$target_dir")"
+
+if [[ -L "$target_dir" && "$(readlink "$target_dir")" == "$source_dir" ]]; then
+  echo "Linked $target_dir -> $source_dir"
+  exit 0
+fi
+
+if [[ -L "$target_dir" ]]; then
+  rm "$target_dir"
+elif [[ -e "$target_dir" ]]; then
+  if (( force == 0 )); then
+    echo "Target exists: $target_dir (rerun with --force to back it up)" >&2
+    exit 1
+  fi
+  backup_dir="$HOME/.agents/skill-backups/viz-explain.$(date +%Y%m%d%H%M%S).$$"
+  mkdir -p "$(dirname "$backup_dir")"
+  mv "$target_dir" "$backup_dir"
+  echo "Backed up $target_dir -> $backup_dir"
+fi
+
+ln -s "$source_dir" "$target_dir"
+echo "Linked $target_dir -> $source_dir"
