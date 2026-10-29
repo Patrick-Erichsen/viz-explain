@@ -79,6 +79,18 @@ Useful setup paths:
 
 ## Interaction contract
 
+Keep related views as named regions of one canvas. A fresh `create_view` call
+does not implicitly append the previous call's elements. Send the initial
+regions together, use `cameraUpdate` to guide focus, and finish on an overview
+that shows every region promised to the user.
+
+For additions, inspect widget context when available, then start with
+`restoreCheckpoint` for the latest checkpoint and add uniquely identified
+elements. This preserves the existing scene and user edits. A deliberate
+rebuild must include every retained region from the canonical model. Check
+that the combined scene contains every promised view; rendering only the last
+region leaves a multi-view explanation incomplete.
+
 The conversation drives learning; selecting or clicking a shape does not send a
 new prompt. Treat level rails, legends, and callouts as visual orientation by
 default. Use element links or viewport controls only when the current
